@@ -1,36 +1,4 @@
-//Each instance of a "todo" will have two own properties: title (string) and done (boolean)
-//it will have access to methods toString, markDone, markUndone, isDone, and getTitle
-class Todo {
-  static DONE_MARKER = "X";
-  static UNDONE_MARKER = " ";
-
-  constructor(title) {
-    this.title = title;
-    this.done = false;
-  }
-
-  toString() {
-    let marker = this.done ? Todo.DONE_MARKER : Todo.UNDONE_MARKER;
-    return `[${marker}] ${this.title}`;
-  }
-
-  markDone() {
-    this.done = true;
-  }
-
-  markUndone() {
-    this.done = false;
-  }
-
-  isDone() {
-    return this.done;
-  }
-
-  getTitle() {
-    return this.title;
-  }
-}
-
+const Todo = require('./todo.js');
 class TodoList {
   constructor(title) {
     this.title = title;
@@ -68,7 +36,7 @@ class TodoList {
     }
   }
 
-  markDone(idx) { 
+  markDoneAt(idx) { 
     this.itemAt(idx).markDone();
   }
 
@@ -88,20 +56,63 @@ class TodoList {
     return this.todos.pop();
   }
 
-  removeAt() { 
-    //removes the Todo object with the specified index number. It returns a 
-    //the deleted Todo object. It raises an error if the index is omitted or invalid.
-    
+  removeAt(index) { 
+    this._validateIndex(index);
+    return this.todos.splice(index, 1);
+  }
+
+  toString() {
+    return `---- ${this.title} ----\n${this._compileStrings()}`;
+  }
+
+  _compileStrings() {
+    return this.todos.map(itemObj => itemObj.toString()).join(`\n`);
+  }
+
+  forEach(callback) {
+    this.todos.forEach(callback);
+  }
+
+  filter(callback) {
+    let doneTasks = new TodoList(this.title);
+    this.forEach(task => {
+      if (callback(task)) {
+        doneTasks.add(task);
+      }
+    })
+    return doneTasks;
+  }
+
+  findByTitle(title) {
+    return this.filter(task => task.getTitle() === title).first();
+  }
+
+  allDone() {
+    this.filter(task => task.isDone());
+  }
+
+  allNotDone() {
+    this.filter(task => !task.isDone());
+  }
+
+  markDone(title) {
+    let item = this.findByTitle(title);
+    if (item instanceof Todo) {
+      markDone();
+    };
+  }
+
+  markAllDone() {
+    this.forEach(task => task.markDone());
+  }
+
+  markAllUndone() {
+    this.forEach(task => task.markUndone());
+  }
+
+  toArray() {
+    return this.todos.slice();
   }
 }
 
-let list = new TodoList('name')
-let todo1 = new Todo("Buy milk");
-let todo2 = new Todo("Clean room");
-let todo3 = new Todo("Go to the gym");
-let todo4 = new Todo("Go shopping");
-
-list.add(todo1);
-list.add(todo2);
-list.add(todo3);
-console.log(list.itemAt(0));
+module.exports = TodoList;
